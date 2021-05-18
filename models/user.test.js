@@ -3,6 +3,8 @@
 const db = require("../db");
 const User = require("./user");
 const Message = require("./message");
+const { NotFoundError } = require("../expressError");
+const { messagesTo } = require("./user");
 
 
 describe("Test User class", function () {
@@ -120,6 +122,12 @@ describe("Test messages part of User class", function () {
     }]);
   });
 
+  test("cannot get messages from nonexistant user", async function () {
+    //let m = await User.messagesFrom("nonUser");
+    console.log(await User.messagesFrom("nonUser"));
+    expect(() => User.messagesFrom("nonuser")).toThrow(NotFoundError);
+  });
+
   test("can get messages to user", async function () {
     let m = await User.messagesTo("test1");
     expect(m).toEqual([{
@@ -135,6 +143,13 @@ describe("Test messages part of User class", function () {
       },
     }]);
   });
+});
+
+test("cannot get messages from nonexistant user", async function () {
+  //let m = await User.messagesTo("nonUser");
+  console.log(await User.messagesTo("nonUser"));
+  //console.log("m= ", m);
+  expect(() => User.messagesTo("nonUSer")).toThrow(NotFoundError);
 });
 
 afterAll(async function () {

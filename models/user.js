@@ -128,6 +128,14 @@ class User {
    *   {username, first_name, last_name, phone}
    */
   static async messagesFrom(username) {
+
+    const user = await db.query(
+      `SELECT username FROM users WHERE username = $1`, [username]);
+    const u = user.rows[0];
+    if (u === undefined) {
+      throw new NotFoundError(`User cannot be found: ${username}`);
+    }
+
     const result = await db.query(
       `SELECT m.id,
               m.to_username,
@@ -135,19 +143,16 @@ class User {
               m.body,
               m.sent_at,
               m.read_at,
-              u.username,
-              u.first_name,
-              u.last_name,
-              u.phone
-         FROM messages m
-                RIGHT OUTER JOIN users u ON m.to_username = u.username
+              user_to.username,
+              user_to.first_name,
+              user_to.last_name,
+              user_to.phone
+         FROM messages AS m
+                JOIN users AS user_to ON m.to_username = user_to.username
          WHERE m.from_username = $1`,
       [username]
     );
     const messagesResult = result.rows;
-
-    const u = result.rows[0];
-    if (u === undefined) throw new NotFoundError(`User cannot be found: ${username}`);
 
     let messagesWithRecipientInfo = messagesResult.map((m) => {
       return {
@@ -174,6 +179,14 @@ class User {
    *   {id, first_name, last_name, phone}
    */
   static async messagesTo(username) {
+
+    const user = await db.query(
+      `SELECT username FROM users WHERE username = $1`, [username]);
+    const u = user.rows[0];
+    if (u === undefined) {
+      throw new NotFoundError(`User cannot be found: ${username}`);
+    }
+
     const result = await db.query(
       `SELECT m.id,
               m.from_username,
