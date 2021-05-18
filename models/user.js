@@ -24,10 +24,11 @@ class User {
                              first_name,
                              last_name,
                              phone,
-                             join_at
+                             join_at,
+                             last_login_at
                              )
          VALUES
-           ($1, $2, $3, $4, $5, current_timestamp)
+           ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
          RETURNING username, password, first_name, last_name, phone`,
       [username, hashedPassword, first_name, last_name, phone]
     );
@@ -43,21 +44,23 @@ class User {
 
     const result = await db.query(
       `SELECT password
-                              FROM users
-                              WHERE username = $1`,
+            FROM users
+            WHERE username = $1`,
       [username]
     );
 
-    const u = result.rows[0];
-    console.log("u line 50: ", u);
+    const user = result.rows[0];
+    //console.log("u line 50: ", u);
 
     // if (u === undefined) throw new NotFoundError(`User cannot be found: ${username}`);
+    //since this function should just return yes/no, we wouldn't want to do the
+    //user check in this case. also, for security purposes so we don't give extra hints
 
-    if (await bcrypt.compare(password, u.password) === true) {
-      return true;
-    } else {
-      return false; //is this enough or should we do user check
-    }
+    return user && await bcrypt.compare(password, user.password) === true;
+    //better to explicitly return the u variable as well as the bcrypt evaluation
+    //this is more performant as if the user doesn't exist
+    //look up Boolean method here, we'll want to use this instead
+
   }
 
   /** Update last_login_at for user */
@@ -84,7 +87,7 @@ class User {
                                     username,
                                     first_name,
                                     last_name
-                            FROM users`
+                            FROM users`//add an order by and fix indentation
     );
     const users = result.rows;
     return users;
@@ -136,8 +139,8 @@ class User {
               u.first_name,
               u.last_name,
               u.phone
-         FROM messages AS m
-                RIGHT OUTER JOIN users AS u ON m.to_username = users.username
+         FROM messages m
+                RIGHT OUTER JOIN users u ON m.to_username = u.username
          WHERE m.from_username = $1`,
       [username]
     );
@@ -182,7 +185,7 @@ class User {
               u.last_name,
               u.phone
          FROM messages AS m
-                JOIN users AS u ON m.from_username = users.username
+                JOIN users AS u ON m.from_username = u.username
          WHERE m.to_username = $1`,
       [username]
     );
@@ -195,7 +198,7 @@ class User {
           username: m.username,
           first_name: m.first_name,
           last_name: m.last_name,
-          phone: m.phone,
+          phone: m.phone
         },
         body: m.body,
         sent_at: m.sent_at,

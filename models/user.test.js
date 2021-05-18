@@ -85,7 +85,7 @@ describe("Test messages part of User class", function () {
       last_name: "Testy1",
       phone: "+14155550000",
     });
-    let u2 = await User.register({
+    let u2 = await User.register({//don't actually need to make variables here, but could be good to have
       username: "test2",
       password: "password",
       first_name: "Test2",
