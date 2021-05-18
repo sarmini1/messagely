@@ -54,12 +54,13 @@ describe("Test User class", function () {
 
   test("can get", async function () {
     let u = await User.get("test");
+    console.log("u is--->", u);
     expect(u).toEqual({
       username: "test",
       first_name: "Test",
       last_name: "Testy",
       phone: "+14155550000",
-      last_login_at: expect.any(Date),
+      last_login_at: null,
       join_at: expect.any(Date),
     });
   });
@@ -123,9 +124,12 @@ describe("Test messages part of User class", function () {
   });
 
   test("cannot get messages from nonexistant user", async function () {
-    //let m = await User.messagesFrom("nonUser");
-    console.log(await User.messagesFrom("nonUser"));
-    expect(() => User.messagesFrom("nonuser")).toThrow(NotFoundError);
+    try {
+      await User.messagesTo("nonUser")
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toEqual(true);
+    }
   });
 
   test("can get messages to user", async function () {
@@ -145,11 +149,13 @@ describe("Test messages part of User class", function () {
   });
 });
 
-test("cannot get messages from nonexistant user", async function () {
-  //let m = await User.messagesTo("nonUser");
-  console.log(await User.messagesTo("nonUser"));
-  //console.log("m= ", m);
-  expect(() => User.messagesTo("nonUSer")).toThrow(NotFoundError);
+test("cannot get messages to nonexistant user", async function () {
+    try {
+      await User.messagesTo("nonUser")
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toEqual(true);
+    }
 });
 
 afterAll(async function () {

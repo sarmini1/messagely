@@ -24,14 +24,16 @@ class User {
                              first_name,
                              last_name,
                              phone,
-                             join_at,
-                             last_login_at
+                             join_at
                              )
          VALUES
-           ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
-         RETURNING username, password, first_name, last_name, phone`,
+           ($1, $2, $3, $4, $5, current_timestamp) 
+         RETURNING username, password, first_name, last_name, phone`, //removed current_timestamp for last_login_at since they haven't
+         //logged in yet
       [username, hashedPassword, first_name, last_name, phone]
     );
+
+    await User.updateLoginTimestamp(username);
 
     return result.rows[0];
   }
